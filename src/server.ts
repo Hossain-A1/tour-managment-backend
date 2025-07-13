@@ -3,6 +3,7 @@ import { Server } from "http";
 import mongoose from "mongoose";
 import { envVars } from "./app/config/env";
 import app from "./app";
+import { seedSuperAdmin } from "./app/utils/seedSuperAdmin";
 
 let server: Server;
 
@@ -17,8 +18,11 @@ const startServer = async () => {
     console.log(error);
   }
 };
-
-startServer();
+//IFI
+(async () => {
+  startServer();
+  seedSuperAdmin();
+})();
 
 //SIGTERM handling others server shurt down
 process.on("SIGTERM", () => {

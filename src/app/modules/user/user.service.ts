@@ -1,0 +1,96 @@
+import AppError from "../../errorHelpers/AppError";
+import bcryptjs from "bcryptjs";
+import { IAuthProvider, IUser, Role } from "./user.interface";
+import { UserModel } from "./user.model";
+import status from "http-status-codes";
+import { envVars } from "../../config/env";
+import { JwtPayload } from "jsonwebtoken";
+//create user service
+const createUser = async (payload: Partial<IUser>) => {
+  const { email, password, ...rest } = payload;
+
+  const isUserExist = await UserModel.findOne({ email });
+
+  if (isUserExist) {
+    throw new AppError(status.BAD_REQUEST, "User Already Exist.");
+  }
+
+  const hashPassword = await bcryptjs.hash(
+    password as string,
+    Number(envVars.BCRYPT_SALT_ROUND)
+  );
+
+  const authsProvider: IAuthProvider = {
+    provider: "credentials",
+    providerId: email as string,
+  };
+
+  const user = await UserModel.create({
+    email,
+    password: hashPassword,
+    auths: [authsProvider],
+    ...rest,
+  });
+
+  return user;
+};
+
+//get all users service
+const getAllUsers = async () => {
+  const users = await UserModel.find({});
+  const totalUser = await UserModel.countDocuments();
+  return {
+    data: users,
+    meta: {
+      total: totalUser,
+    },
+  };
+};
+
+//update  user
+const updateUser = async (
+  userId: string,
+  payload: Partial<IUser>,
+  decodedToken: JwtPayload
+) => {
+  const isUserExist = await UserModel.findById(userId);
+
+  if (!isUserExist) {
+    throw new AppError(status.NOT_FOUND, "User Not Found");
+  }
+
+  if (payload.role) {
+    if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
+      throw new AppError(status.FORBIDDEN, "You are not authorized");
+    }
+    if (payload.role === Role.SUPER_ADMIN && decodedToken.role === Role.ADMIN) {
+      throw new AppError(status.FORBIDDEN, "You are not authorized");
+    }
+  }
+
+  if (payload.isActive || payload.isDeleted || payload.isVerified) {
+    if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
+      throw new AppError(status.FORBIDDEN, "You are not authorized");
+    }
+  }
+
+  if (payload.password) {
+    payload.password = await bcryptjs.hash(
+      payload.password,
+      Number(envVars.BCRYPT_SALT_ROUND)
+    );
+  }
+
+  const newUpdatedUser = await UserModel.findByIdAndUpdate(userId, payload, {
+    new: true,
+    runValidators: true,
+  });
+
+  return newUpdatedUser;
+};
+
+export const UserServices = {
+  createUser,
+  getAllUsers,
+  updateUser,
+};

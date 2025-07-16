@@ -7,13 +7,14 @@ import { globalErrorHandler } from "./app/middlewares/globalError.middleware";
 import { notFoundErrorHandler } from "./app/middlewares/notFound";
 import cookieParser from "cookie-parser";
 import passport from "passport";
+import { envVars } from "./app/config/env";
 
 const app = express();
 
 //required middlewares
 app.use(
   expressSession({
-    secret: "yoour secret",
+    secret: envVars.EXPRESS_SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
   })

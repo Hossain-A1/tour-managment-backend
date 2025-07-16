@@ -39,7 +39,7 @@ export const checkAuth =
   }
 
       if (!authRoles.includes(verifiedToken.role)) {
-        throw new AppError(403, "No token recived");
+        throw new AppError(403, "You are not authorized for this action");
       }
 
 

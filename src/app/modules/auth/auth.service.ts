@@ -3,7 +3,6 @@
 import AppError from "../../errorHelpers/AppError";
 import status from "http-status-codes";
 import bcryptjs from "bcryptjs";
-import { IUser } from "../user/user.interface";
 import { UserModel } from "../user/user.model";
 import {
   createNewAccessTokenWithRefreshToken,
@@ -11,33 +10,6 @@ import {
 } from "../../utils/userTokens";
 import { JwtPayload } from "jsonwebtoken";
 import { envVars } from "../../config/env";
-
-const credentialsLogin = async (payload: Partial<IUser>) => {
-  const { email, password } = payload;
-  const isUserExist = await UserModel.findOne({ email });
-
-  if (!isUserExist) {
-    throw new AppError(status.BAD_REQUEST, "Email does not exist.");
-  }
-
-  const isPasswordMatche = await bcryptjs.compare(
-    password as string,
-    isUserExist.password as string
-  );
-
-  if (!isPasswordMatche) {
-    throw new AppError(status.BAD_REQUEST, "Incorrect Password");
-  }
-
-  const { accessToken, refreshToken } = createUserToken(isUserExist);
-
-  const { password: pass, ...rest } = isUserExist.toObject();
-  return {
-    accessToken,
-    refreshToken,
-    user: rest,
-  };
-};
 
 const getNewAccessToken = async (refreshToken: string) => {
   const newAccessToken = await createNewAccessTokenWithRefreshToken(
@@ -69,11 +41,9 @@ const resetPassword = async (
   );
 
   user!.save();
-
 };
 
 export const AuthService = {
-  credentialsLogin,
   getNewAccessToken,
   resetPassword,
 };

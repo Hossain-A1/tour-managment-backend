@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from "express";
 import status from "http-status-codes";
@@ -15,21 +16,19 @@ const handleGoogleLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const redirect = req.query.redirect || "/";
 
-    passport.authenticate("google", { scope: ["profile", "email"],state:redirect as string})(
-      req,
-      res,
-      next
-    );
+    passport.authenticate("google", {
+      scope: ["profile", "email"],
+      state: redirect as string,
+    })(req, res, next);
   }
 );
 
 //google login callback handler
 const handleGoogleCallback = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-
-    let redirectTo = req.query.state?req.query.state as string:""
-    if(redirectTo.startsWith('/')){
-      redirectTo= redirectTo.slice(1)
+    let redirectTo = req.query.state ? (req.query.state as string) : "";
+    if (redirectTo.startsWith("/")) {
+      redirectTo = redirectTo.slice(1);
     }
     const user = req.user;
 
@@ -48,16 +47,27 @@ const handleGoogleCallback = catchAsync(
 //login handler
 const handleCredentialsLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const loginInfo = await AuthService.credentialsLogin(req.body);
+    passport.authenticate("local", async (err: any, user: any, info: any) => {
+      if (err) {
+        return next(new AppError(401,err));
+      }
 
-    setAuthCookie(res, loginInfo);
+      if (!user) {
+        return next(new AppError(401,info.message));
+      }
+      const tokenInfo =  createUserToken(user);
 
-    sendResponse(res, {
-      success: true,
-      statusCode: status.OK,
-      message: "Login Successfully",
-      data: loginInfo,
-    });
+      delete user.toObject().password;
+
+      setAuthCookie(res, tokenInfo);
+
+      sendResponse(res, {
+        success: true,
+        statusCode: status.OK,
+        message: "Login Successfully",
+        data: user,
+      });
+    })(req, res, next);
   }
 );
 

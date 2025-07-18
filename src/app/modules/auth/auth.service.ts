@@ -1,13 +1,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import AppError from "../../errorHelpers/AppError";
 import status from "http-status-codes";
 import bcryptjs from "bcryptjs";
 import { UserModel } from "../user/user.model";
-import {
-  createNewAccessTokenWithRefreshToken,
-  createUserToken,
-} from "../../utils/userTokens";
+import { createNewAccessTokenWithRefreshToken } from "../../utils/userTokens";
 import { JwtPayload } from "jsonwebtoken";
 import { envVars } from "../../config/env";
 

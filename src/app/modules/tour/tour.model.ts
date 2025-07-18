@@ -19,10 +19,10 @@ const tourSchema = new Schema<ITour>(
     title: {
       type: String,
       required: true,
+      unique:true
     },
     slug: {
       type: String,
-      required: true,
       unique: true,
     },
 
@@ -34,6 +34,12 @@ const tourSchema = new Schema<ITour>(
       default: [],
     },
     location: {
+      type: String,
+    },
+     departureLocation: {
+      type: String,
+    },
+    arrivalLocation: {
       type: String,
     },
     costForm: {
@@ -80,5 +86,46 @@ const tourSchema = new Schema<ITour>(
   },
   { timestamps: true, versionKey: false }
 );
+
+
+
+
+
+tourSchema.pre("save", async function (next) {
+  if (this.isModified("title")) {
+    const tour_slug = this.title.toLowerCase().split(" ").join("-");
+
+    let slug = tour_slug;
+
+    let count = 0;
+
+    while (await TourModel.exists({ slug })) {
+      slug = `${slug}-${count++}`;
+    }
+
+    this.slug = tour_slug;
+  }
+
+  next();
+});
+
+//query middleware
+tourSchema.pre("findOneAndUpdate", async function (next) {
+  const tour = this.getUpdate() as Partial<ITour>;
+
+  if (tour.title) {
+  const baseSlug = tour.title?.toLowerCase().split(" ").join("-");
+
+    let slug = `${baseSlug}`;
+
+    let count = 0;
+    while (await TourModel.exists({ slug })) {
+      slug = `${slug}-${count++}`;
+    }
+    tour.slug = slug;
+  }
+  this.setUpdate(tour);
+  next();
+});
 
 export const TourModel = model<ITour>("Tour", tourSchema);

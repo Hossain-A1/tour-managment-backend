@@ -5,6 +5,8 @@ import { UserModel } from "./user.model";
 import status from "http-status-codes";
 import { envVars } from "../../config/env";
 import { JwtPayload } from "jsonwebtoken";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { userSearchAbleField } from "./user.constants";
 //create user service
 const createUser = async (payload: Partial<IUser>) => {
   const { email, password, ...rest } = payload;
@@ -30,13 +32,25 @@ const createUser = async (payload: Partial<IUser>) => {
 };
 
 //get all users service
-const getAllUsers = async () => {
-  const users = await UserModel.find({});
-  const totalUser = await UserModel.countDocuments();
+const getAllUsers = async (query: Record<string, string>) => {
+  const queryBuilder = new QueryBuilder(UserModel.find(), query);
+
+  const users = await queryBuilder
+    .search(userSearchAbleField)
+    .filter()
+    .sort()
+    .fields()
+    .pagenate()
+    .build();
+
+  const { total, totalPage, page, limit } = await queryBuilder.getMeta();
   return {
     data: users,
     meta: {
-      total: totalUser,
+      total,
+      totalPage,
+      page,
+      limit,
     },
   };
 };

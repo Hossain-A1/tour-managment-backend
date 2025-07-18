@@ -14,12 +14,12 @@ export enum IsActive {
 }
 //AUTH PROVIDERS
 export interface IAuthProvider {
-  provider: 'google' |'credentials';
+  provider: "google" | "credentials";
   providerId: string;
 }
 //user interface
 export interface IUser {
-  _id:Types.ObjectId
+  _id: Types.ObjectId;
   name: string;
   email: string;
   password?: string;

@@ -7,9 +7,9 @@ import { DivisionService } from "./division.service";
 //create division handaler
 const handleCreateDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { name } = req.body;
+    const body = req.body;
 
-    const division = await DivisionService.createDivision(name);
+    const division = await DivisionService.createDivision(body);
 
     sendResponse(res, {
       success: true,
@@ -53,14 +53,30 @@ const handleDeleteDivision = catchAsync(
 //get division handaler
 const handleGetDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const divisions = await DivisionService.getDivision();
+
+    const query = req.query
+    const divisions = await DivisionService.getDivision(query as Record<string,string>);
 
     sendResponse(res, {
       success: true,
-      statusCode: 201,
+      statusCode: 200,
       message: "Divisions returns successfully!",
       data: divisions.data,
       meta: divisions.meta,
+    });
+  }
+);
+//get single division handaler
+const handleGetSingleDivision = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const slug = req.params.slug;
+    const divisions = await DivisionService.getSingleDivision(slug);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: "Single division return successfully!",
+      data: divisions.data,
     });
   }
 );
@@ -70,4 +86,5 @@ export const DivisionController = {
   handleUpdateDivision,
   handleDeleteDivision,
   handleGetDivision,
+  handleGetSingleDivision,
 };

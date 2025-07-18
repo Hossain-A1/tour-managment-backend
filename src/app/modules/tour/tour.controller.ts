@@ -83,7 +83,7 @@ const handleUpdateTour = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
     const body = req.body;
-    
+
     const tour = await TourService.updateTour(body, id);
 
     sendResponse(res, {
@@ -108,16 +108,20 @@ const handleDeleteTour = catchAsync(
     });
   }
 );
+
 const handleGetAllTour = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const tour = await TourService.getAllTour();
+    const query = req.query;
+    const { meta, data } = await TourService.getAllTour(
+      query as Record<string, string>
+    );
 
     sendResponse(res, {
       success: true,
       statusCode: 200,
       message: "All tour returns successfully!",
-      data: tour.data,
-      meta: tour.meta,
+      data,
+      meta,
     });
   }
 );

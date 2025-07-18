@@ -39,6 +39,7 @@ const userSchema = new Schema<IUser>(
     address: {
       type: String,
     },
+   
     isDeleted: {
       type: Boolean,
       default: false,

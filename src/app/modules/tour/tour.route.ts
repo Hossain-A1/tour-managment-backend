@@ -14,21 +14,21 @@ const router = Router();
 //create tourType route
 router.post(
   "/create-tour-type",
-  validateRequest(createTourTypeZodSchema),
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  validateRequest(createTourTypeZodSchema),
   TourController.handleCreateTourType
 );
 //update tourType route
 router.patch(
   "/tour-types/:id",
   validateRequest(createTourTypeZodSchema),
-  checkAuth(...Object.values(Role)),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   TourController.handleUpdateTourType
 );
 //update tourType route
 router.delete(
   "/tour-types/:id",
-  checkAuth(Role.ADMIN,Role.SUPER_ADMIN),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   TourController.handleDeleteTourType
 );
 //gets all tourType route
@@ -36,15 +36,15 @@ router.get("/tour-types", TourController.handleGetAllTourType);
 //create tour route
 router.post(
   "/create",
-  validateRequest(createTourZodSchema),
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  validateRequest(createTourZodSchema),
   TourController.handleCreateTour
 );
 
 router.patch(
   "/:id",
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   validateRequest(updateTourZodSchema),
-  checkAuth(...Object.values(Role)),
   TourController.handleUpdateTour
 );
 router.delete(

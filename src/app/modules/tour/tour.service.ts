@@ -2,12 +2,13 @@ import AppError from "../../errorHelpers/AppError";
 import status from "http-status-codes";
 import { TourModel, TourTypeModel } from "./tour.model";
 import { ITour, ITourType } from "./tour.interface";
-import slugify from "slugify";
 import { BookingModel } from "../bookings/booking.model";
 import {
   checkIsExists,
   checkNotExists,
 } from "../../errorHelpers/checkIsExistsOrNot";
+import { tourSearchAbleField } from "./tour.constaint";
+import { QueryBuilder } from "../../utils/QueryBuilder";
 //create tourType service
 const createTourType = async (name: string) => {
   await checkIsExists<ITourType>(TourTypeModel, { name });
@@ -16,7 +17,7 @@ const createTourType = async (name: string) => {
 };
 //update tourType service
 const updateTourType = async (name: string, id: string) => {
-  await checkNotExists<ITourType>(TourTypeModel, { _id:id });
+  await checkNotExists<ITourType>(TourTypeModel, { _id: id });
 
   const tourType = await TourTypeModel.findByIdAndUpdate(
     id,
@@ -27,7 +28,7 @@ const updateTourType = async (name: string, id: string) => {
 };
 //update tourType service
 const deleteTourType = async (id: string) => {
-  await checkNotExists<ITourType>(TourTypeModel, { _id:id });
+  await checkNotExists<ITourType>(TourTypeModel, { _id: id });
 
   const isAssociated = await TourModel.exists({ tourType: id });
 
@@ -52,38 +53,18 @@ const getAllTourType = async () => {
   };
 };
 //create tour service
-const createTour = async (payload: Partial<ITour>) => {
-  const { title, slug, division, tourType, ...rest } = payload;
+const createTour = async (payload: ITour) => {
+  await checkIsExists<ITour>(TourModel, { title: payload.title });
 
-  const tour_slug = slugify(slug as string);
-  await checkIsExists<ITour>(TourModel, { slug: tour_slug });
-
-  const tour = await TourModel.create({
-    title,
-    slug: tour_slug,
-    division,
-    tourType,
-    ...rest,
-  });
+  const tour = await TourModel.create(payload);
 
   return tour;
 };
 //update tour service
 const updateTour = async (payload: Partial<ITour>, id: string) => {
-  
-  await checkNotExists<ITour>(TourModel, { _id:id });
+  await checkNotExists<ITour>(TourModel, { _id: id });
 
-  const { title, location, tourType } = payload;
-
-  const tour = await TourModel.findByIdAndUpdate(
-    id,
-    {
-      title,
-      location,
-      tourType,
-    },
-    { new: true }
-  );
+  const tour = await TourModel.findByIdAndUpdate(id, payload, { new: true });
 
   return tour;
 };
@@ -103,19 +84,24 @@ const deleteTour = async (id: string) => {
   await TourModel.findByIdAndDelete(id);
 };
 //get tour service
-const getAllTour = async () => {
-  const tours = await TourModel.find({});
-  const countTours = await TourModel.countDocuments();
+const getAllTour = async (query: Record<string, string>) => {
+  const queryBuilder = new QueryBuilder(TourModel.find(), query);
 
-  if (!tours) {
-    throw new AppError(status.NOT_FOUND, "Tour not available right now.");
-  }
+  const tours = await queryBuilder
+    .search(tourSearchAbleField)
+    .filter()
+    .sort()
+    .fields()
+    .pagenate();
+
+  const [data, meta] = await Promise.all([
+    tours.build(),
+    queryBuilder.getMeta(),
+  ]);
 
   return {
-    data: tours,
-    meta: {
-      total: countTours,
-    },
+    meta,
+    data,
   };
 };
 

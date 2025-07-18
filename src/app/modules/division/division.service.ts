@@ -1,63 +1,71 @@
-import slugfy from "slugify";
-import status from "http-status-codes";
-import AppError from "../../errorHelpers/AppError";
 import { IDivision } from "./division.interface";
 import { DivisionModel } from "./division.model";
-import { TourModel } from "../tour/tour.model";
 import {
   checkIsExists,
   checkNotExists,
 } from "../../errorHelpers/checkIsExistsOrNot";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { divisionSearchAbleField } from "./division.constants";
 
 //create division service
 const createDivision = async (payload: Partial<IDivision>) => {
-  await checkIsExists<IDivision>(DivisionModel, { name: payload });
-  const division = await DivisionModel.create({
-    name: payload,
-    slug: slugfy(payload as string),
-  });
+  await checkIsExists<IDivision>(DivisionModel, { name: payload.name });
+
+  const division = await DivisionModel.create(payload);
 
   return division;
 };
 //update division service
 const updateDivision = async (payload: Partial<IDivision>, id: string) => {
   await checkNotExists<IDivision>(DivisionModel, { _id: id });
-  const { name, ...rest } = payload;
+  const duplicatedDivision = await DivisionModel.findOne({
+    name: payload.name,
+    _id: { $ne: id },
+  });
 
-  const division = await DivisionModel.findByIdAndUpdate(
-    id,
-    {
-      name: name,
-      slug: slugfy(name as string),
-      ...rest,
-    },
-    { new: true }
-  );
+  if (duplicatedDivision) {
+    throw new Error("A division with this name already exists");
+  }
+
+  const division = await DivisionModel.findByIdAndUpdate(id, payload, {
+    new: true,
+  });
 
   return division;
 };
 //delete division service
 const deleteDivision = async (id: string) => {
-  const isExistsDivision = await TourModel.exists({ division: id });
-
-  if (isExistsDivision) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "Cannot delete this division because it is associated with one or more tours. Please remove or update those tours first."
-    );
-  }
-
   await DivisionModel.findByIdAndDelete(id);
+  return null;
+};
+
+//get single division service
+const getSingleDivision = async (slug: string) => {
+  const division = await DivisionModel.findOne({ slug });
+  return {
+    data: division,
+  };
 };
 //get division service
-const getDivision = async () => {
-  const divisions = await DivisionModel.find({});
-  const totalNumOfDivision = await DivisionModel.countDocuments();
+const getDivision = async (query: Record<string, string>) => {
+  const queryBuilder = new QueryBuilder(DivisionModel.find(), query);
+
+  const divisions = await queryBuilder
+    .search(divisionSearchAbleField)
+    .filter()
+    .sort()
+    .pagenate()
+    .build();
+
+  const { total, totalPage, page, limit } = await queryBuilder.getMeta();
 
   return {
     data: divisions,
     meta: {
-      total: totalNumOfDivision,
+      total,
+      totalPage,
+      page,
+      limit,
     },
   };
 };
@@ -67,4 +75,5 @@ export const DivisionService = {
   updateDivision,
   deleteDivision,
   getDivision,
+  getSingleDivision,
 };

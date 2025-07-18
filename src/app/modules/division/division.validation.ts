@@ -2,10 +2,10 @@ import z from "zod";
 
 export const createDivisionZodSchema = z.object({
   name: z
-    .string({ invalid_type_error: "Division name must be string" })
+    .string({required_error:"Name is required", invalid_type_error: "Division name must be string" })
     .min(4, "Division name must be 3 characters long")
     .max(20, "Division name must be under 20 characters"),
-  slug: z.string({ invalid_type_error: "Slug must be string" }).optional(),
+  slug: z.string({required_error:"Slug is required", invalid_type_error: "Slug must be string" }).optional(),
   thambnails: z
     .string({ invalid_type_error: "Thambnails must be string" })
     .optional(),

@@ -9,18 +9,23 @@ import { Role } from "../user/user.interface";
 import { DivisionController } from "./division.controller";
 
 const router = Router();
+//gets divisions
+router.get("/", DivisionController.handleGetDivision);
+//get a single division
+router.get("/:slug", DivisionController.handleGetSingleDivision);
+
 //create division route
 router.post(
   "/create",
-  validateRequest(createDivisionZodSchema),
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  validateRequest(createDivisionZodSchema),
   DivisionController.handleCreateDivision
 );
 //update division route
 router.patch(
   "/:id",
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   validateRequest(updateDivisionZodSchema),
-  checkAuth(...Object.values(Role)),
   DivisionController.handleUpdateDivision
 );
 //delete division route
@@ -29,7 +34,5 @@ router.delete(
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   DivisionController.handleDeleteDivision
 );
-//gets divisions
-router.get("/", DivisionController.handleGetDivision);
 
 export const DivisionRoutes = router;

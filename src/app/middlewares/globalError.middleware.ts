@@ -8,6 +8,7 @@ import { handleDuplicateError } from "../errorHelpers/handleDuplicateError";
 import { handleCastError } from "../errorHelpers/handleCastError";
 import { handleZodError } from "../errorHelpers/handleZodError";
 import { handleValidationError } from "../errorHelpers/handleValidationError";
+import { TErorSources } from "../interfaces/error.types";
 
 export const globalErrorHandler = (
   err: any,

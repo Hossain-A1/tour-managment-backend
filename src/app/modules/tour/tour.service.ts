@@ -2,7 +2,7 @@ import AppError from "../../errorHelpers/AppError";
 import status from "http-status-codes";
 import { TourModel, TourTypeModel } from "./tour.model";
 import { ITour, ITourType } from "./tour.interface";
-import { BookingModel } from "../bookings/booking.model";
+import { BookingModel } from "../booking/booking.model";
 import {
   checkIsExists,
   checkNotExists,

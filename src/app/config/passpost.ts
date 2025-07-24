@@ -9,7 +9,7 @@ import {
 } from "passport-google-oauth20";
 import { envVars } from "./env";
 import { UserModel } from "../modules/user/user.model";
-import { Role } from "../modules/user/user.interface";
+import { IsActive, Role } from "../modules/user/user.interface";
 import { Strategy as LocalStrategy } from "passport-local";
 //local login
 passport.use(
@@ -24,6 +24,20 @@ passport.use(
 
         if (!isUserExist) {
           return done(null, false, { message: "User does not exist" });
+        }
+        if (!isUserExist.isVerified) {
+        return  done("User is not verified");
+        }
+
+        if (
+          isUserExist.isActive === IsActive.BLOCKED ||
+          isUserExist.isActive === IsActive.INACTIVE
+        ) {
+        return  done(`User is ${isUserExist.isActive}`);
+        }
+
+        if (isUserExist.isDeleted) {
+        return  done("User is deleted");
         }
 
         const isGoogleAuthenticated = isUserExist.auths.some(
@@ -76,6 +90,23 @@ passport.use(
         }
 
         let user = await UserModel.findOne({ email });
+
+        if (user && !user.isVerified) {
+          return done(null, false, { message: "User is not verified" });
+        }
+
+        if (
+          user &&
+          (user.isActive === IsActive.BLOCKED ||
+            user.isActive === IsActive.INACTIVE)
+        ) {
+          return done(`User is ${user.isActive}`);
+        }
+
+        if (user && user.isDeleted) {
+          return done(null, false, { message: "User is deleted" });
+        }
+
         if (!user) {
           user = await UserModel.create({
             email,

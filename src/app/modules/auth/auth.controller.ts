@@ -11,17 +11,7 @@ import { createUserToken } from "../../utils/userTokens";
 import AppError from "../../errorHelpers/AppError";
 import { envVars } from "../../config/env";
 import { JwtPayload } from "jsonwebtoken";
-//google login
-const handleGoogleLogin = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const redirect = req.query.redirect || "/";
 
-    passport.authenticate("google", {
-      scope: ["profile", "email"],
-      state: redirect as string,
-    })(req, res, next);
-  }
-);
 
 //google login callback handler
 const handleGoogleCallback = catchAsync(
@@ -49,13 +39,13 @@ const handleCredentialsLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     passport.authenticate("local", async (err: any, user: any, info: any) => {
       if (err) {
-        return next(new AppError(401,err));
+        return next(new AppError(err.statusCode || 401, err));
       }
 
       if (!user) {
-        return next(new AppError(401,info.message));
+        return next(new AppError(401, info.message));
       }
-      const tokenInfo =  createUserToken(user);
+      const tokenInfo = createUserToken(user);
 
       delete user.toObject().password;
 
@@ -110,14 +100,47 @@ const handleGetNewAccessToken = catchAsync(
     });
   }
 );
-//reset password
-const handleResetPasswprd = catchAsync(
+
+//set password
+const handleSetPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const decodedToken = req.user as JwtPayload;
+    const password = req.body.password;
+
+    await AuthService.setPassword(decodedToken.userId, password);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: status.OK,
+      message: "Password changed Successfully",
+      data: null,
+    });
+  }
+);
+//forget password
+const handleForgetPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const email = req.body?.email;
+
+    await AuthService.forgetPassword(email);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: status.OK,
+      message: "Password changed Successfully",
+      data: null,
+    });
+  }
+);
+
+//change password
+const handleChangePassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const decodedToken = req.user;
     const newPassword = req.body.newPassword;
     const oldPassword = req.body.oldPassword;
 
-    await AuthService.resetPassword(
+    await AuthService.changePassword(
       oldPassword,
       newPassword,
       decodedToken as JwtPayload
@@ -132,11 +155,29 @@ const handleResetPasswprd = catchAsync(
   }
 );
 
+//reset password
+const handleResetPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const decodedToken = req.user;
+
+    await AuthService.resetPassword(req.body, decodedToken as JwtPayload);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: status.OK,
+      message: "Password changed Successfully",
+      data: null,
+    });
+  }
+);
+
 export const AuthControler = {
-  handleGoogleLogin,
   handleCredentialsLogin,
   handleGoogleCallback,
   handleLogout,
   handleGetNewAccessToken,
-  handleResetPasswprd,
+  handleResetPassword,
+  handleChangePassword,
+  handleSetPassword,
+  handleForgetPassword,
 };

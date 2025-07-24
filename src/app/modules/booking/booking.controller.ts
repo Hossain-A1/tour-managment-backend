@@ -26,36 +26,42 @@ const handleCreateBooking = catchAsync(
 
 const handleGetAllBookings = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const booking = await BookingService.getAllBookings();
+    const query = req.query;
+    const booking = await BookingService.getAllBookings(
+      query as Record<string, string>
+    );
 
     sendResponse(res, {
       success: true,
       statusCode: 201,
       message: "Booking returns successfully!!",
-      data: booking,
+      data: booking.data,
+      meta: booking.meta,
     });
   }
 );
 const handleGetUserBooking = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const booking = await BookingService.getUserBooking();
+    const user = req.user;
+    const bookings = await BookingService.getUserBooking(user as JwtPayload);
 
     sendResponse(res, {
       success: true,
-      statusCode: 201,
+      statusCode: 200,
       message: "Booking return successfully!!",
-      data: booking,
+      data: bookings.data,
     });
   }
 );
 
 const handleGetSingleBooking = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const booking = await BookingService.getSingleBooking();
+    const boookingId = req.params.bookingId;
+    const booking = await BookingService.getSingleBooking(boookingId);
 
     sendResponse(res, {
       success: true,
-      statusCode: 201,
+      statusCode: 200,
       message: "Booking return successfully!!",
       data: booking,
     });
@@ -63,11 +69,17 @@ const handleGetSingleBooking = catchAsync(
 );
 const handleUpdateBookingStatus = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const booking = await BookingService.updateBookingStatus();
+    const boookingId = req.params.bookingId;
+    const status = req.query.status as string;
+
+    const booking = await BookingService.updateBookingStatus(
+      boookingId,
+      status
+    );
 
     sendResponse(res, {
       success: true,
-      statusCode: 201,
+      statusCode: 200,
       message: "Booking status update successfully!!",
       data: booking,
     });

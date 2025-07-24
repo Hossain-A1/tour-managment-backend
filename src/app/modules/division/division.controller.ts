@@ -3,13 +3,17 @@ import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { DivisionService } from "./division.service";
+import { IDivision } from "./division.interface";
 
 //create division handaler
 const handleCreateDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const body = req.body;
+    const payload: IDivision = {
+      ...req.body,
+      thambnail: req.file?.path,
+    };
 
-    const division = await DivisionService.createDivision(body);
+    const division = await DivisionService.createDivision(payload);
 
     sendResponse(res, {
       success: true,
@@ -22,10 +26,13 @@ const handleCreateDivision = catchAsync(
 //update division handaler
 const handleUpdateDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const body = req.body;
+    const payload:IDivision ={
+      ...req.body,
+      thambnail:req.file?.path
+    }
     const id = req.params.id;
 
-    const division = await DivisionService.updateDivision(body, id);
+    const division = await DivisionService.updateDivision(payload, id);
 
     sendResponse(res, {
       success: true,
@@ -53,9 +60,10 @@ const handleDeleteDivision = catchAsync(
 //get division handaler
 const handleGetDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-
-    const query = req.query
-    const divisions = await DivisionService.getDivision(query as Record<string,string>);
+    const query = req.query;
+    const divisions = await DivisionService.getDivision(
+      query as Record<string, string>
+    );
 
     sendResponse(res, {
       success: true,

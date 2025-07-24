@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { TourService } from "./tour.service";
+import { ITour } from "./tour.interface";
 //tourType controllers are here
 const handleCreateTourType = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -66,9 +67,12 @@ const handleGetAllTourType = catchAsync(
 //tour controllers are here
 const handleCreateTour = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const body = req.body;
+    const payload: ITour = {
+      ...req.body,
+      images: (req.files as Express.Multer.File[]).map((file) => file.path),
+    };
 
-    const tour = await TourService.createTour(body);
+    const tour = await TourService.createTour(payload);
 
     sendResponse(res, {
       success: true,
@@ -82,9 +86,12 @@ const handleCreateTour = catchAsync(
 const handleUpdateTour = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
-    const body = req.body;
+    const payload: ITour = {
+      ...req.body,
+      images: (req.files as Express.Multer.File[]).map((file) => file.path),
+    };
 
-    const tour = await TourService.updateTour(body, id);
+    const tour = await TourService.updateTour(payload, id);
 
     sendResponse(res, {
       success: true,

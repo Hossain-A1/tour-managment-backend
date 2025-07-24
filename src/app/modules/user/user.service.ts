@@ -55,6 +55,19 @@ const getAllUsers = async (query: Record<string, string>) => {
   };
 };
 
+//get my profile service
+const getMyProfile = async (userId: string) => {
+  const user = await UserModel.findById(userId);
+
+  if (!user) {
+    throw new AppError(status.NOT_FOUND, "User not found with the id");
+  }
+
+  return {
+    data: user,
+  };
+};
+
 //update  user
 const updateUser = async (
   userId: string,
@@ -101,4 +114,5 @@ export const UserServices = {
   createUser,
   getAllUsers,
   updateUser,
+  getMyProfile,
 };

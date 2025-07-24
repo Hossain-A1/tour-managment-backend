@@ -10,7 +10,7 @@ export interface ITour {
   title: string;
   slug: string;
   description?: string;
-  images: [];
+  images:string [];
   location?: string;
   departureLocation?: string;
   arrivalLocation?: string;
@@ -25,4 +25,5 @@ export interface ITour {
   minAge?: number;
   division: Types.ObjectId;
   tourType: Types.ObjectId;
+  deleteImages?:string[]
 }

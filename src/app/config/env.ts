@@ -22,6 +22,7 @@ interface IEnvConfig {
     STORE_ID: string;
     STORE_PASS: string;
     SSL_PAYMENT_API: string;
+    SSL_IPN_URL:string
     SSL_VALIDATION_API: string;
     SSL_SUCCESS_FRONTEND_URL: string;
     SSL_FAIL_FRONTEND_URL: string;
@@ -42,6 +43,10 @@ interface IEnvConfig {
     SMTP_HOST: string;
     SMTP_FROM: string;
   };
+  REDIS_HOST: string;
+  REDIS_PORT: string;
+  REDIS_USERNAME: string;
+  REDIS_PASSWORD: string;
 }
 
 const loadEnvVariables = (): IEnvConfig => {
@@ -63,6 +68,7 @@ const loadEnvVariables = (): IEnvConfig => {
     "FRONTEND_URL",
     "SSL_STORE_PASS",
     "SSL_PAYMENT_API",
+    'SSL_IPN_URL',
     "SSL_VALIDATION_API",
     "SSL_SUCCESS_FRONTEND_URL",
     "SSL_FAIL_FRONTEND_URL",
@@ -78,6 +84,10 @@ const loadEnvVariables = (): IEnvConfig => {
     "SMTP_PORT",
     "SMTP_FROM",
     "SMTP_HOST",
+    "REDIS_HOST",
+    "REDIS_PORT",
+    "REDIS_USERNAME",
+    "REDIS_PASSWORD",
   ];
 
   requiredEnvVariables.forEach((key) => {
@@ -107,6 +117,7 @@ const loadEnvVariables = (): IEnvConfig => {
       STORE_ID: process.env.SSL_STORE_ID as string,
       STORE_PASS: process.env.SSL_STORE_PASS as string,
       SSL_PAYMENT_API: process.env.SSL_PAYMENT_API as string,
+      SSL_IPN_URL: process.env.SSL_IPN_URL as string,
       SSL_VALIDATION_API: process.env.SSL_VALIDATION_API as string,
       SSL_SUCCESS_FRONTEND_URL: process.env.SSL_SUCCESS_FRONTEND_URL as string,
       SSL_FAIL_FRONTEND_URL: process.env.SSL_FAIL_FRONTEND_URL as string,
@@ -130,6 +141,12 @@ const loadEnvVariables = (): IEnvConfig => {
       SMTP_HOST: process.env.SMTP_HOST as string,
       SMTP_FROM: process.env.SMTP_FROM as string,
     },
+
+    //redis
+    REDIS_HOST: process.env.REDIS_HOST as string,
+    REDIS_PORT: process.env.REDIS_PORT as string,
+    REDIS_USERNAME: process.env.REDIS_USERNAME as string,
+    REDIS_PASSWORD: process.env.REDIS_PASSWORD as string,
   };
 };
 

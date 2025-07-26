@@ -33,4 +33,5 @@ export interface IUser {
   guides?: Types.ObjectId[];
   auths: IAuthProvider[];
   role: Role;
+  createdAt?:Date
 }

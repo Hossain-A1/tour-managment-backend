@@ -1,8 +1,11 @@
+/* eslint-disable no-console */
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { PaymentService } from "./payment.service";
 import { envVars } from "../../config/env";
 import { sendResponse } from "../../utils/sendResponse";
+import { JwtPayload } from "jsonwebtoken";
+import { SSLService } from "../sslCommerz/sslCommerz.service";
 
 const handleInitPayment = catchAsync(async (req: Request, res: Response) => {
   const bookingId = req.params.bookingId;
@@ -55,9 +58,42 @@ const handleCancelPayment = catchAsync(async (req: Request, res: Response) => {
   }
 });
 
+const handleGetInvoiceDownloadUrl = catchAsync(
+  async (req: Request, res: Response) => {
+    const paymentId = req.params.paymentId;
+    const decodedUser = req.user as JwtPayload;
+
+    const result = await PaymentService.getInvoiceDownloadUrl(
+      paymentId,
+      decodedUser.userId
+    );
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: "Payment url download Successfully",
+      data: result,
+    });
+  }
+);
+
+const handleSSLValidatePayment = catchAsync(
+  async (req: Request, res: Response) => {
+    console.log('validate payment body',req.body);
+    await SSLService.validatePayment(req.body);
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: "Payment validate Successfully",
+      data: null,
+    });
+  }
+);
+
 export const PaymentController = {
   handleInitPayment,
   handleSucessPayment,
   handleFailPayment,
   handleCancelPayment,
+  handleGetInvoiceDownloadUrl,
+  handleSSLValidatePayment,
 };

@@ -76,15 +76,22 @@ const updateUser = async (
 ) => {
   const isUserExist = await UserModel.findById(userId);
 
+  if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
+    if (userId !== decodedToken.userId) {
+      throw new AppError(status.FORBIDDEN, "You are not authorized");
+    }
+  }
+
   if (!isUserExist) {
     throw new AppError(status.NOT_FOUND, "User Not Found");
   }
 
+  if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
+    throw new AppError(status.FORBIDDEN, "You are not authorized");
+  }
+
   if (payload.role) {
-    if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
-      throw new AppError(status.FORBIDDEN, "You are not authorized");
-    }
-    if (payload.role === Role.SUPER_ADMIN && decodedToken.role === Role.ADMIN) {
+    if (decodedToken.role === Role.ADMIN && isUserExist.role === Role.ADMIN) {
       throw new AppError(status.FORBIDDEN, "You are not authorized");
     }
   }
@@ -93,13 +100,6 @@ const updateUser = async (
     if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
       throw new AppError(status.FORBIDDEN, "You are not authorized");
     }
-  }
-
-  if (payload.password) {
-    payload.password = await bcryptjs.hash(
-      payload.password,
-      Number(envVars.BCRYPT_SALT_ROUND)
-    );
   }
 
   const newUpdatedUser = await UserModel.findByIdAndUpdate(userId, payload, {

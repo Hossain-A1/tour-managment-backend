@@ -42,7 +42,7 @@ const tourSchema = new Schema<ITour>(
     arrivalLocation: {
       type: String,
     },
-    costForm: {
+    costFrom: {
       type: Number,
     },
     startDate: {

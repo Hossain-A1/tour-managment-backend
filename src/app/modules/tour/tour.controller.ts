@@ -59,7 +59,6 @@ const handleGetAllTourType = catchAsync(
       statusCode: 200,
       message: "All tour types returns successfully!",
       data: all_tourType.data,
-      meta: all_tourType.meta,
     });
   }
 );

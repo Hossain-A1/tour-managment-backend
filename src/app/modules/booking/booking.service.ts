@@ -29,13 +29,13 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
       );
     }
 
-    const tour = await TourModel.findById(payload.tour).select("costForm");
+    const tour = await TourModel.findById(payload.tour).select("costFrom");
 
-    if (!tour?.costForm) {
+    if (!tour?.costFrom) {
       throw new AppError(stattus.BAD_REQUEST, "No tour cost found");
     }
 
-    const amount = Number(tour.costForm) * Number(payload.guestCount);
+    const amount = Number(tour.costFrom) * Number(payload.guestCount);
     //crate booking
     const booking = await BookingModel.create(
       [

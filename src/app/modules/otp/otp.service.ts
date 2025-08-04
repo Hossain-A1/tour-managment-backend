@@ -12,13 +12,13 @@ const generateOtp = (length = 6) => {
   return otp;
 };
 
-export const sendOTP = async (email: string, name: string) => {
+ const sendOTP = async (email: string, name: string) => {
   const user = await UserModel.findOne({ email });
 
   if (!user) {
     throw new AppError(404, "User not found with the email");
   }
-  if (user.isActive) {
+  if (user.isVerified) {
     throw new AppError(400, "You are already verified");
   }
 
@@ -43,7 +43,7 @@ export const sendOTP = async (email: string, name: string) => {
   });
 };
 
-export const verifyOTP = async (email: string, otp: string) => {
+ const verifyOTP = async (email: string, otp: string) => {
   const user = await UserModel.findOne({ email });
 
   if (!user) {

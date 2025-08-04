@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
-import { OTPService, sendOTP } from "./otp.service";
+import { OTPService} from "./otp.service";
 
 const hnadleSendOTP = catchAsync(async (req: Request, res: Response) => {
   const { email, name } = req.body;
 
-  await sendOTP(email, name);
+  await OTPService.sendOTP(email, name);
   sendResponse(res, {
     statusCode: 200,
     success: true,

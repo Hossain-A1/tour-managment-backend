@@ -17,6 +17,7 @@ passport.use(
     {
       usernameField: "email",
       passwordField: "password",
+      
     },
     async (email: string, password: string, done) => {
       try {

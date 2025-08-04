@@ -50,11 +50,25 @@ const handleGetAllUsers = catchAsync(
     });
   }
 );
+const handleMyProfile = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as JwtPayload
+    const result = await UserServices.getMyProfile(user.userId);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Your profile Return Successfully",
+      data: result.data
+    });
+  }
+);
 
 export const UserControllers = {
   handleCreateUser,
   handleGetAllUsers,
   handleUpdateUser,
+  handleMyProfile
 };
 
 //route matching -> controller -> services -> model ->DB

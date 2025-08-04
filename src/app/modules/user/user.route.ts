@@ -13,17 +13,24 @@ router.post(
   UserControllers.handleCreateUser
 );
 
-router.get(
-  "/all-users",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  UserControllers.handleGetAllUsers
-);
-
 router.patch(
   "/:id",
   validateRequest(updateUserZodSchema),
   checkAuth(...Object.values(Role)),
   UserControllers.handleUpdateUser
 );
+
+router.get(
+  "/all-users",
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  UserControllers.handleGetAllUsers
+);
+router.get(
+  "/me",
+  checkAuth(...Object.values(Role)),
+  UserControllers.handleMyProfile
+);
+
+
 
 export const UserRoutes = router;

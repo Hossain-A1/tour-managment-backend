@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import AppError from "../../errorHelpers/AppError";
 import { UserModel } from "../user/user.model";
 import stattus from "http-status-codes";
@@ -10,10 +9,11 @@ import { PAYMENT_STATUS } from "../payment/payment.interface";
 import { TourModel } from "../tour/tour.model";
 import { SSLService } from "../sslCommerz/sslCommerz.service";
 import { ISSLCommerz } from "../sslCommerz/sllCommerz.interface";
+import { JwtPayload } from "jsonwebtoken";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { getTransactionId } from "../../utils/getTransactionId";
 
-const getTransactionId = () => {
-  return `tran_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-};
+
 
 const createBooking = async (payload: Partial<IBooking>, userId: string) => {
   const transactionId = getTransactionId();
@@ -97,18 +97,69 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
   }
 };
 
-const getUserBooking = async () => {
-  return
+const getUserBooking = async (decodedUser: JwtPayload) => {
+  const bookings = await BookingModel.find({ user: decodedUser.userId })
+    .populate("user", "name email")
+    .populate("tour", "title")
+    .populate("payment");
+
+  return {
+    data: bookings,
+    meta: null,
+  };
 };
-const getSingleBooking = async () => {
-  return
-}
-;
-const getAllBookings = async () => {
-  return
+const getSingleBooking = async (bookingId: string) => {
+  const booking = await BookingModel.findById(bookingId);
+
+  if (!booking) {
+    throw new AppError(
+      stattus.NOT_FOUND,
+      "Booking not found with this bookingId"
+    );
+  }
+
+  return booking;
 };
-const updateBookingStatus = async () => {
-  return
+
+const getAllBookings = async (query: Record<string, string>) => {
+  const queryBuilder = new QueryBuilder(BookingModel.find(), query);
+
+  const bookings = await queryBuilder
+    .filter()
+    .search(["status"])
+    .fields()
+    .pagenate();
+
+  const [data, meta] = await Promise.all([
+    bookings.build(),
+    queryBuilder.getMeta(),
+  ]);
+
+  return {
+    data,
+    meta,
+  };
+};
+
+const updateBookingStatus = async (bookingId: string, urlStatus: string) => {
+  const isExist = await BookingModel.findById(bookingId);
+
+  if (!isExist) {
+    throw new AppError(
+      stattus.NOT_FOUND,
+      "Booking not found with this bookingId"
+    );
+  }
+
+  const updatedBooking = await BookingModel.findByIdAndUpdate(
+    bookingId,
+    {
+      status: urlStatus,
+    },
+    { new: true, runValidators: true }
+  );
+
+  return updatedBooking;
 };
 
 export const BookingService = {

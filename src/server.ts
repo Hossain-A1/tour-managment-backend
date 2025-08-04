@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import { envVars } from "./app/config/env";
 import app from "./app";
 import { seedSuperAdmin } from "./app/utils/seedSuperAdmin";
+import { connectRedis } from "./app/config/redis.config";
 
 let server: Server;
 
@@ -20,8 +21,9 @@ const startServer = async () => {
 };
 //IFI
 (async () => {
-  startServer();
-  seedSuperAdmin();
+ await connectRedis()
+ await startServer();
+ await seedSuperAdmin();
 })();
 
 //SIGTERM handling others server shurt down

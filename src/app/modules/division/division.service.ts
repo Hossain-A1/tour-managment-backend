@@ -1,11 +1,10 @@
 import { IDivision } from "./division.interface";
 import { DivisionModel } from "./division.model";
-import {
-  checkIsExists,
-  checkNotExists,
-} from "../../errorHelpers/checkIsExistsOrNot";
+import { checkIsExists } from "../../errorHelpers/checkIsExistsOrNot";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { divisionSearchAbleField } from "./division.constants";
+import AppError from "../../errorHelpers/AppError";
+import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
 
 //create division service
 const createDivision = async (payload: Partial<IDivision>) => {
@@ -17,7 +16,10 @@ const createDivision = async (payload: Partial<IDivision>) => {
 };
 //update division service
 const updateDivision = async (payload: Partial<IDivision>, id: string) => {
-  await checkNotExists<IDivision>(DivisionModel, { _id: id });
+  const existingDevision = await DivisionModel.findById(id);
+  if (!existingDevision) {
+    throw new AppError(404, "Division not exists in DB");
+  }
   const duplicatedDivision = await DivisionModel.findOne({
     name: payload.name,
     _id: { $ne: id },
@@ -30,6 +32,10 @@ const updateDivision = async (payload: Partial<IDivision>, id: string) => {
   const division = await DivisionModel.findByIdAndUpdate(id, payload, {
     new: true,
   });
+
+  if (payload.thambnail && existingDevision.thambnail) {
+    await deleteImageFromCloudinary(existingDevision.thambnail);
+  }
 
   return division;
 };
